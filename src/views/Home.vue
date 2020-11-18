@@ -1,17 +1,19 @@
 <template>
-  <div class="home">
-    <HelloWorld/>
-  </div>
+  <v-container fluid class="d-flex justify-space-between">
+    <FavouriteCurrency class="ma-5 mt-0"/>
+    <CurrencyList class="ma-5 mt-0"/>
+  </v-container>
 </template>
 
 <script>
 
-import HelloWorld from '@/components/HelloWorld.vue';
+import CurrencyList from '@/components/CurrencyList.vue';
+import FavouriteCurrency from '@/components/FavouriteCurrency.vue';
 
 export default {
-  name: 'Home',
   components: {
-    HelloWorld,
+    CurrencyList,
+    FavouriteCurrency,
   },
 };
 </script>
