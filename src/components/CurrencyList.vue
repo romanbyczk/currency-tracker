@@ -1,22 +1,17 @@
 <template>
-  <v-card class="mx-auto" width="256" tile>
-    <v-navigation-drawer permanent>
-      <v-system-bar>Lista walut</v-system-bar>
-      <v-list nav dense>
-          <v-list-item v-for="(item, i) in items" :key="i">
-            <v-list-item-action>
-              <v-btn icon>
-                <v-icon color="blue" v-on:click="addCurrency(item)">mdi-plus</v-icon>
-              </v-btn>
-            </v-list-item-action>
-
-            <v-list-item-content>
-              <v-list-item-title v-text="item.currency"></v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-  </v-card>
+  <v-data-table
+    :headers="headers"
+    :items="items"
+  >
+    <template v-slot:top>
+      <v-toolbar-title style="text-align: center;">Currency table</v-toolbar-title>
+    </template>
+    <template v-slot:item.action="{ item }">
+      <v-icon v-if="isFavourite(item)"
+      color="yellow" @click="removeFavouriteCurrency(item)">mdi-star</v-icon>
+      <v-icon v-else color="grey" @click="addFavouriteCurrency(item)">mdi-star-outline</v-icon>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
@@ -25,17 +20,50 @@ import NBPService from '@/services/NBPService';
 export default {
   data: () => ({
     items: [],
+    headers: [
+      {
+        text: 'Nazwa waluty',
+        align: 'start',
+        value: 'currency',
+      },
+      { text: 'Kod waluty', value: 'code' },
+      { text: 'Kurs średni', value: 'mid' },
+      { text: 'Dodaj do ulubionych', value: 'action', sortable: false },
+    ],
   }),
+
   mounted() {
-    this.getTable();
+    this.fetchTableData();
   },
+
   methods: {
-    addCurrency(currency) {
-      this.$store.commit('addFavoriteCurrency', currency);
+    addFavouriteCurrency(favouriteCurrency) {
+      if (!this.$store.state.favouriteCurrencies.includes(favouriteCurrency)) {
+        this.$store.commit('addFavouriteCurrency', favouriteCurrency);
+      }
     },
-    getTable() {
-      NBPService.getCurrencies().then((res) => {
-        this.items = res[0].rates;
+
+    removeFavouriteCurrency(favouriteCurrency) {
+      if (this.$store.state.favouriteCurrencies.includes(favouriteCurrency)) {
+        this.$store.commit('removeFavouriteCurrency', favouriteCurrency);
+      }
+    },
+
+    isFavourite(currency) {
+      if (this.$store.state.favouriteCurrencies) {
+        return this.$store.state.favouriteCurrencies.includes(currency);
+      }
+      return false;
+    },
+
+    fetchTableData() {
+      this.items = [];
+      Promise.all([
+        NBPService.getCurrencies('A'),
+        NBPService.getCurrencies('B'),
+      ]).then((data) => {
+        const [tableA, tableB] = data;
+        this.items = [...tableA[0].rates, ...tableB[0].rates];
       });
     },
   },

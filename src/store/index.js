@@ -5,22 +5,22 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    favoriteCurrencies: [],
+    favouriteCurrencies: [],
   },
   mutations: {
-    getFavoriteCurrencies(state) {
-      return state.favoriteCurrencies;
+    getFavouriteCurrencies(state) {
+      return state.favouriteCurrencies;
     },
-    addFavoriteCurrency(state, currency) {
-      state.favoriteCurrencies.push(currency);
+    addFavouriteCurrency(state, currency) {
+      state.favouriteCurrencies.push(currency);
     },
-    removeFavoriteCurrency(state, currencies) {
+    removeFavouriteCurrency(state, currencies) {
       if (currencies.length > 1) {
-        state.favoriteCurrencies = state.favoriteCurrencies.filter(
+        state.favouriteCurrencies = state.favouriteCurrencies.filter(
           (currency) => currencies.includes(currency),
         );
       } else {
-        state.favoriteCurrencies = state.favoriteCurrencies.filter(
+        state.favouriteCurrencies = state.favouriteCurrencies.filter(
           (currency) => currencies.code !== currency.code,
         );
       }

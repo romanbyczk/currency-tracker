@@ -1,36 +1,51 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="6">
-        <v-card
-          v-for="i in $store.state.favoriteCurrencies"
-          v-bind:key="i.code"
-        >
-          <v-card-title class="d-flex justify-space-between">{{ i.currency }}
-            <v-btn icon>
-              <v-icon color="red" v-on:click="removeCurrency(i)">mdi-delete</v-icon>
-            </v-btn>
-          </v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-data-table
+    :model="selectedCurrencies"
+    :headers="headers"
+    :items="this.$store.state.favouriteCurrencies"
+    show-select
+    :single-select="false"
+    item-key="code">
+    <template v-slot:top>
+      <v-container>
+        <v-row>
+          <v-icon  color="red" @click="removeFavouriteCurrencies()">mdi-delete</v-icon>
+          <v-toolbar-title style="text-align: center;">Favourite currencies</v-toolbar-title>
+        </v-row>
+      </v-container>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
-import NBPService from '@/services/NBPService';
+import { mapState } from 'vuex';
 
 export default {
+  data: () => ({
+    selectedCurrencies: [],
+    headers: [
+      {
+        text: 'Nazwa waluty',
+        align: 'start',
+        value: 'currency',
+      },
+      { text: 'Kod waluty', value: 'code' },
+      { text: 'Kurs średni', value: 'mid' },
+      { text: 'Dodaj do ulubionych', value: 'action', sortable: false },
+    ],
+  }),
+
   methods: {
-    removeCurrency(currency) {
-      this.$store.commit('removeFavoriteCurrency', currency);
-    },
-    getCurrencies() {
-      NBPService.getCurrencies().then((res) => {
-        this.items = res[0].rates;
-      });
+    removeFavouriteCurrencies() {
+      console.log(this.selectedCurrencies);
+      if (this.selectedCurrencies.lenght > 0) {
+        this.$store.commit('removeFavouriteCurrency', this.selectedCurrencies);
+      }
     },
   },
+  computed: mapState([
+    'favouriteCurrencies',
+  ]),
 };
 </script>
 
