@@ -1,6 +1,6 @@
 <template>
-  <v-container fluid >
-    <CurrencyList :items="items" class="ma-5 mt-0"/>
+  <v-container>
+    <CurrencyList :items="items" class="ma-5"/>
   </v-container>
 </template>
 
