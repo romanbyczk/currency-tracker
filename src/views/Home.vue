@@ -1,19 +1,38 @@
 <template>
-  <v-container fluid class="d-flex justify-space-between">
-    <FavouriteCurrency class="ma-5 mt-0"/>
-    <CurrencyList class="ma-5 mt-0"/>
+  <v-container fluid >
+    <CurrencyList :items="items" class="ma-5 mt-0"/>
   </v-container>
 </template>
 
 <script>
 
 import CurrencyList from '@/components/CurrencyList.vue';
-import FavouriteCurrency from '@/components/FavouriteCurrency.vue';
+import NBPService from '@/services/NBPService';
 
 export default {
   components: {
     CurrencyList,
-    FavouriteCurrency,
+  },
+
+  data: () => ({
+    items: [],
+  }),
+
+  mounted() {
+    this.fetchCurrencies();
+  },
+
+  methods: {
+    fetchCurrencies() {
+      this.items = [];
+      Promise.all([
+        NBPService.getCurrencies('A'),
+        NBPService.getCurrencies('B'),
+      ]).then((data) => {
+        const [tableA, tableB] = data;
+        this.items = [...tableA[0].rates, ...tableB[0].rates];
+      });
+    },
   },
 };
 </script>

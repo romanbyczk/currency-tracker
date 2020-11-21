@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import createPersistedState from 'vuex-persistedstate';
+import containsElement from '../utils/Utils';
 
 Vue.use(Vuex);
 
@@ -7,23 +9,24 @@ export default new Vuex.Store({
   state: {
     favouriteCurrencies: [],
   },
+
+  plugins: [createPersistedState()],
+
   mutations: {
-    getFavouriteCurrencies(state) {
-      return state.favouriteCurrencies;
-    },
     addFavouriteCurrency(state, currency) {
-      state.favouriteCurrencies.push(currency);
-    },
-    removeFavouriteCurrency(state, currencies) {
-      if (currencies.length > 1) {
-        state.favouriteCurrencies = state.favouriteCurrencies.filter(
-          (currency) => currencies.includes(currency),
-        );
-      } else {
-        state.favouriteCurrencies = state.favouriteCurrencies.filter(
-          (currency) => currencies.code !== currency.code,
-        );
+      if (!containsElement(state.favouriteCurrencies, currency)) {
+        state.favouriteCurrencies.push(currency);
       }
+    },
+
+    removeFavouriteCurrencies(state, currencies) {
+      state.favouriteCurrencies = state.favouriteCurrencies
+        .filter((v) => !currencies?.includes(v));
+    },
+
+    removeFavouriteCurrency(state, currency) {
+      state.favouriteCurrencies = state.favouriteCurrencies
+        .filter((v) => currency?.code !== v.code);
     },
   },
   actions: {},
