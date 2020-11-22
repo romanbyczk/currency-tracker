@@ -14,132 +14,122 @@
       <template v-slot:top>
         <v-container>
           <v-row>
-            <v-btn icon class="ml-3" color="red">
-              <v-icon v-if="favourite" color="red" @click="onRemove()">
+            <v-btn v-if="favourite" icon class="ml-3" color="red">
+              <v-icon  color="red" @click="onRemove()">
                 mdi-delete
               </v-icon>
             </v-btn>
-            <v-toolbar-title class="ml-5">
-              {{ tableName }}
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Search"
-              single-line
-              hide-details
-            ></v-text-field>
+            <v-toolbar-title class="ml-5"> {{ tableName }} </v-toolbar-title>
+            <v-spacer/>
+            <v-text-field v-model="search" label="Search" class="mr-4"/>
           </v-row>
         </v-container>
       </template>
       <template v-slot:item.currency="{ item }">
-        <div style="min-width: 450px; max-width: 200px">
+        <div style="min-width: 450px">
           {{ item.currency.toUpperCase() }}
         </div>
       </template>
       <template v-slot:item.action="{ item }">
-        <v-tooltip v-if="isFavourite(item)" right>
+        <v-tooltip v-if="isFavourite(item)" bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon
               v-bind="attrs"
               v-on="on"
               color="yellow"
               @click="onRemove(item)"
-              >mdi-star</v-icon
-            >
+              >mdi-star
+            </v-icon>
           </template>
           <span>Remove from favourite</span>
         </v-tooltip>
-        <v-tooltip v-else right>
+        <v-tooltip v-else bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon
-              color="grey"
               v-bind="attrs"
               v-on="on"
+              color="grey"
               @click="addToFavourite(item)"
-              >mdi-star-outline</v-icon
-            >
+              >mdi-star-outline
+            </v-icon>
           </template>
           <span>Add to favourite</span>
         </v-tooltip>
       </template>
     </v-data-table>
-    <v-dialog v-model="dialogDelete" max-width="600px">
-      <v-card>
-        <v-card-title class="headline">
-          {{ baseDeleteMessage }}
-        </v-card-title>
-        <v-card-subtitle v-if="itemToRemove">
-          {{ itemToRemove.currency }}
-        </v-card-subtitle>
-        <v-card-subtitle v-else>
-          {{ selectedCurrencies.map((v) => v.currency) }}
-        </v-card-subtitle>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="removeHandler">OK</v-btn>
-          <v-btn color="blue darken-1" text @click="closeDeleteDialog"
-            >Cancel</v-btn
-          >
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <DeleteDialog :model="dialogDelete"
+     :message="deleteDialogMessage"
+     :submessage="getDialogSubmessage()"
+     :onRemove="removeHandler"
+     :onClose="closeDeleteDialog"/>
   </v-container>
 </template>
 
 <script>
-import containsElement from '@/utils/Utils';
+import Utils from '@/utils/Utils';
 import EventBus from '@/event-bus';
+import DeleteDialog from '@/components/DeleteDialog.vue';
 
 export default {
   props: ['favourite', 'items'],
-  computed: {
-    headers() {
-      return [
-        { text: 'Currency name', align: 'start', value: 'currency' },
-        { text: 'Currenccy code', value: 'code' },
-        { text: 'Average exchange rate', value: 'mid' },
-        !this.favourite && {
-          text: 'Favourite',
-          value: 'action',
-          sortable: false,
-        },
-      ];
-    },
+  components: {
+    DeleteDialog,
   },
-
   data: () => ({
+    search: '',
+    headers: [
+      { text: 'Currency name', align: 'start', value: 'currency' },
+      { text: 'Currenccy code', value: 'code' },
+      { text: 'Average exchange rate', value: 'mid' },
+      { text: 'Favourite', value: 'action', sortable: false },
+    ],
     selectedCurrencies: [],
     dialogDelete: false,
     itemToRemove: {},
     tableName: 'Table Name',
+    deleteDialogMessage: 'Delete Message',
     removeHandler: Function,
-    baseDeleteMessage: 'Delete Message',
-    search: '',
   }),
 
-  mounted() {
-    this.tableName = 'All currencies';
-    this.baseDeleteMessage = 'Are you sure you want to delete this item?';
-    this.removeHandler = this.removeFromFavourite;
-
-    if (this.favourite) {
-      this.tableName = 'Favourite currencies';
-      this.baseDeleteMessage = 'Are you sure you want to delete those items?';
-      this.removeHandler = this.removeFewFromFavourite;
-    }
+  beforeMount() {
+    this.loadInitialData();
   },
 
   methods: {
-    onRemove(item) {
-      this.dialogDelete = true;
-      this.itemToRemove = item;
+    loadInitialData() {
+      this.tableName = 'All currencies';
+      this.deleteDialogMessage = 'Are you sure you want to delete this item?';
+      this.removeHandler = this.removeFromFavourite;
+
+      if (this.favourite) {
+        this.removeActionHeader();
+        this.tableName = 'Favourite currencies';
+        this.deleteDialogMessage = 'Are you sure you want to delete those items?';
+        this.removeHandler = this.removeFewFromFavourite;
+      }
     },
+
+    removeActionHeader() {
+      this.headers = this.headers.filter((v) => v.value !== 'action');
+    },
+
+    getDialogSubmessage() {
+      if (this.itemToRemove && this.itemToRemove.currency) {
+        return this.itemToRemove.currency;
+      }
+      if (this.selectedCurrencies) {
+        return this.selectedCurrencies.map((v) => v.currency);
+      }
+      return 'NO DATA';
+    },
+
     closeDeleteDialog() {
       this.dialogDelete = false;
       this.itemToRemove = {};
+    },
+    onRemove(item) {
+      this.dialogDelete = true;
+      this.itemToRemove = item;
     },
 
     removeFewFromFavourite() {
@@ -147,17 +137,18 @@ export default {
       this.selectedCurrencies = [];
       this.closeDeleteDialog();
     },
-
     removeFromFavourite() {
       this.$store.commit('removeFavouriteCurrency', this.itemToRemove);
       this.closeDeleteDialog();
     },
+
     addToFavourite(currency) {
       this.$store.commit('addFavouriteCurrency', currency);
       EventBus.$emit('showSuccess');
     },
+
     isFavourite(currency) {
-      return containsElement(this.$store.state.favouriteCurrencies, currency);
+      return Utils.containsCurrency(this.$store.state.favouriteCurrencies, currency);
     },
   },
 };

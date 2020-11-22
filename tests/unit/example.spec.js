@@ -1,12 +1,15 @@
 import { shallowMount } from '@vue/test-utils';
-import HelloWorld from '@/components/HelloWorld.vue';
+import CurrencyList from '@/components/CurrencyList.vue';
+import Vuetify from 'vuetify';
+import Vue from 'vue';
 
-describe('HelloWorld.vue', () => {
+Vue.use(Vuetify);
+describe('CurrencyList.vue', () => {
   it('renders props.msg when passed', () => {
-    const msg = 'new message';
-    const wrapper = shallowMount(HelloWorld, {
-      propsData: { msg },
+    const favourite = true;
+    const wrapper = shallowMount(CurrencyList, {
+      propsData: { favourite },
     });
-    expect(wrapper.text()).toMatch(msg);
+    expect(wrapper.text()).toMatch('Delete Message');
   });
 });

@@ -8,12 +8,6 @@ const NBPService = {
     .catch(() => {
       EventBus.$emit('showError');
     }),
-
-  getCurrencyDetails: (code) => fetch(`${BASE_URL}/rates/A/${code}/today/`)
-    .then((res) => res.json())
-    .catch(() => {
-      EventBus.$emit('showError');
-    }),
 };
 
 export default NBPService;
